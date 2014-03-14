@@ -29,6 +29,12 @@ docs = []
 doc = Nokogiri::HTML(open(url))
 docs << doc
 
+# grab the search filters once
+filters = []
+doc.css('ul.secondary').each do |filter|
+  filters << filter.css('li')[1].text
+end
+
 # loop around page appending to the doc
 while doc.css('a.right').count == 2
   puts "... %d" % (docs.length + 1)
@@ -56,6 +62,10 @@ docs.each do |doc|
     miles << mileage_val unless mileage_val == 0
   end
 end
+
+puts
+puts "Your filters"
+filters.each {|filter| puts filter}
 
 puts
 puts "We found %d cars with prices" % prices.length
