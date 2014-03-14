@@ -3,35 +3,45 @@ require 'open-uri'
 require 'monetize'
 require 'easystats'
 
-# Get a Nokogiri::HTML::Document for the page we’re interested in...
+# parse command line arguments of the url
+abort("Specify the URL") unless ARGV.length > 0
 
-# dummy url for some porsche cayennes
-# ideally we would construct this from scratch through a UI
-url = "http://www.cars.com/for-sale/searchresults.action?stkTyp=U&tracktype=usedcc&mkId=20081&AmbMkId=20081&AmbMkNm=Porsche&make=Porsche&AmbMdNm=Cayenne&model=Cayenne&mdId=20791&AmbMdId=20791&prMx=20000&rd=30&zc=98115&searchSource=QUICK_FORM&enableSeo=1"
+url = ARGV.first.chomp
+
+puts "Fetching cars..."
 doc = Nokogiri::HTML(open(url))
-prices_html = doc.css('h4.price')
 
-# alternative to using monetize: p.scan(/[.0-9]/).join().to_f
+# alternative to strip extra chars: p.scan(/[.0-9]/).join().to_f
+
+puts "Parsing data..."
+prices_html = doc.css('h4.price')
 prices = []
 prices_html.each do |price|
-  prices << Monetize.parse(price.text).to_f
+  price_float = Monetize.parse(price.text).to_f
+  prices << price_float unless price_float == 0.0
 end
 
-puts "We found %d cars" % prices.length
-
-%w[
-  average
-  median
-  mode
-  range
-  standard_deviation
-  variance
-  weighted_moving_average
-].each do |method|
-  puts "#{method}: #{prices.send(method.to_sym)}"
+miles_html = doc.css('div.mileage')
+miles = []
+miles_html.each do |mileage|
+  mileage_val = mileage.text.scan(/[.0-9]/).join().to_i
+  miles << mileage_val unless mileage_val == 0
 end
 
-puts "Average price: %f" % prices.average
-puts "Max price: %f" % prices.max
-puts "Min price: %f" % prices.min
-puts "Standard deviation: %f" % prices.standard_deviation
+puts
+puts "We found %d cars with prices" % prices.length
+puts 
+puts "Average price: %.2f" % prices.average
+puts "Median price: %.2f" % prices.median
+puts "Max price: %.2f" % prices.max
+puts "Min price: %.2f" % prices.min
+puts "Standard deviation: %.2f" % prices.standard_deviation
+
+puts 
+puts "We found %d cars with mileage" % miles.length
+puts
+puts "Average miles: %d" % miles.average
+puts "Median miles: %d" % miles.median
+puts "Max miles: %d" % miles.max
+puts "Min miles: %d" % miles.min
+puts "Standard deviation: %d" % miles.standard_deviation
