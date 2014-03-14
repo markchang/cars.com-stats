@@ -31,11 +31,12 @@ docs << doc
 
 # grab the search filters and matches once
 matches = doc.css('h3.secondary').text
-puts "Found %s" % matches
+puts "Your search has %s" % matches
 
-filters = []
+filter_text = ""
 doc.css('ul.secondary').each do |filter|
-  filters << filter.css('li')[1].text
+  filter_text += filter.css('li.title').css('h6').text + "\n"
+  filter.css('li a').each_with_index {|y,index| next if index==0; filter_text += y.text + "\n"}
 end
 
 # loop around page appending to the doc
@@ -47,8 +48,6 @@ while doc.css('a.right').count == 2
 end
 
 # alternative to strip extra chars: p.scan(/[.0-9]/).join().to_f
-
-puts "Parsing data..."
 prices = []
 miles = []
 
@@ -68,7 +67,8 @@ end
 
 puts
 puts "Your filters"
-filters.each {|filter| puts filter}
+puts "------------"
+puts filter_text
 
 puts
 puts "We found %d cars with prices" % prices.length
