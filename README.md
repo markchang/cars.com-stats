@@ -1,4 +1,4 @@
-
+<pre>
  cars-info.rb
  markchang - 2014
  parses a search URL from cars.com and displays some simple statistics
@@ -10,3 +10,4 @@
 
  usage
  ruby cars-info.rb [url]
+</pre>
