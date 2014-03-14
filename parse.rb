@@ -9,23 +9,38 @@ abort("Specify the URL") unless ARGV.length > 0
 url = ARGV.first.chomp
 
 puts "Fetching cars..."
+
+docs = []
+
 doc = Nokogiri::HTML(open(url))
+docs << doc
+
+# loop around page appending to the doc
+while doc.css('a.right').count == 2
+  puts "... %d" % (docs.length + 1)
+  next_url = doc.css('a.right')[0]['href']
+  doc = Nokogiri::HTML(open(next_url))
+  docs << doc
+end
 
 # alternative to strip extra chars: p.scan(/[.0-9]/).join().to_f
 
 puts "Parsing data..."
-prices_html = doc.css('h4.price')
 prices = []
-prices_html.each do |price|
-  price_float = Monetize.parse(price.text).to_f
-  prices << price_float unless price_float == 0.0
-end
-
-miles_html = doc.css('div.mileage')
 miles = []
-miles_html.each do |mileage|
-  mileage_val = mileage.text.scan(/[.0-9]/).join().to_i
-  miles << mileage_val unless mileage_val == 0
+
+docs.each do |doc|
+  prices_html = doc.css('h4.price')
+  prices_html.each do |price|
+    price_float = Monetize.parse(price.text).to_f
+    prices << price_float unless price_float == 0.0
+  end
+
+  miles_html = doc.css('div.mileage')
+  miles_html.each do |mileage|
+    mileage_val = mileage.text.scan(/[.0-9]/).join().to_i
+    miles << mileage_val unless mileage_val == 0
+  end
 end
 
 puts
