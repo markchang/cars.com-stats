@@ -29,7 +29,10 @@ docs = []
 doc = Nokogiri::HTML(open(url))
 docs << doc
 
-# grab the search filters once
+# grab the search filters and matches once
+matches = doc.css('h3.secondary').text
+puts "Found %s" % matches
+
 filters = []
 doc.css('ul.secondary').each do |filter|
   filters << filter.css('li')[1].text
@@ -37,7 +40,7 @@ end
 
 # loop around page appending to the doc
 while doc.css('a.right').count == 2
-  puts "... %d" % (docs.length + 1)
+  puts "Loading page %d ..." % (docs.length + 1)
   next_url = doc.css('a.right')[0]['href']
   doc = Nokogiri::HTML(open(next_url))
   docs << doc
